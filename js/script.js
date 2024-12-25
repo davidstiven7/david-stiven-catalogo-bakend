@@ -1,72 +1,47 @@
-import { api } from "./utils.js";
 
-import "./funcionesCliente.js";
+const editButtons = 
+document.querySelectorAll('.edit');
+const deleteButtons = document.querySelectorAll('.delete');
+const modal = 
+document.getElementById('modalFormulario');
+const cerrarModal = document.getElementById('cerrarModal');
+const formulario = document.getElementById('formularioCliente');
 
-document.addEventListener("DOMContentLoaded", function () {
-  cargarDatosCliente(); // llamado a la funcion cargarDatosCliente
 
-  const form = document.querySelector("form");
+editButtons.forEach((button) => {
+  button.addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    const id = card.getAttribute('data-id');
+    const nombre = card.querySelector('h2').innerText;
+    const descripcion = card.querySelector('p').innerText;
 
-  const { documento, nombre, apellidos, email, fecha_nacimiento, editar } = form.elements; // Destructuring: recupera los elementos del formulario
+    const formulario= document.getElementById("formularioCliente")
+    formulario.nombre.value = nombre;
+    formulario.documento.value = id; // Usando "data-id" como ejemplo
+    formulario.apellidos.value = descripcion;
 
-  form.addEventListener("submit", function (event) {
-    event.preventDefault(); // Evita que se recargue la página
-
-    const data = {
-      documento: documento.value,
-      nombre: nombre.value,
-      apellidos: apellidos.value,
-      email: email.value,
-      fecha_nacimiento: fecha_nacimiento.value,
-    };
-
-    // enviar los datos
-    api({
-      method: editar.value ? "PUT" : "POST",
-      url: editar.value ? `/cliente/${editar.value}` : "/cliente",
-      data,
-    })
-      .then(({ data }) => {
-        console.log(data);
-        Swal.fire("Exito!", data.message, "success")
-        cargarDatosCliente()
-        form.reset()
-      })
-      .catch((err) =>
-        Swal.fire("Error!", err?.response?.data?.message, "error")
-      );
+    // Mostrar el modal
+    modal.style.display = 'block';
   });
 });
 
-export function cargarDatosCliente(pagina = 1) {
-  const tbody = document.querySelector("tbody");
-  tbody.innerHTML = "";
-  // peticion a localhost:3000/clientes del server de node
-  api.get("/clientes").then(({ data }) => {
-     
-    for (const cliente of data) {
-      
-      const dateConverted = dayjs(cliente.fecha_nacimiento).format("DD-MM-YYYY");
+// Función para cerrar el modal
+cerrarModal.addEventListener('click', () => {
+  modal.style.display = 'none';
+});
 
-      tbody.innerHTML += `
-          <tr>
-            <td>${cliente.id}</td>
-            <td>${cliente.documento}</td>
-            <td>${cliente.nombre}</td>
-            <td>${cliente.apellidos}</td>
-            <td>${cliente.email}</td>
-            <td>${dateConverted}</td>
-            <td>
-                <div class="btn-group" role="group" aria-label="actions">
-                    <button type="button" class="btn btn-primary" onclick="editarCliente(${cliente.id})">
-                       <i class="fa-solid fa-pen-to-square"></i>
-                    </button>
-                    <button type="button" class="btn btn-danger" onclick="eliminarCliente(${cliente.id})">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            </td>
-          </tr>`;
-    }
+// Cerrar modal si se hace clic fuera de él
+window.addEventListener('click', (e) => {
+  if (e.target === modal) {
+    modal.style.display = 'none';
+  }
+});
+
+// Función para manejar la eliminación
+deleteButtons.forEach((button) => {
+  button.addEventListener('click', (e) => {
+    const card = e.target.closest('.card');
+    card.remove(); // Elimina la tarjeta del DOM
+    alert('Tarjeta eliminada.');
   });
-}
+});
